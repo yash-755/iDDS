@@ -2,9 +2,9 @@ Workflow
 ==============
 
 The iDDS has implemented a workflow architecture to support new use cases. The Workflow
-consists of Work(Transformation) and Condition, where Condition can be used to implement
-DAG support. New use cases can be implemented with inherited Work class with developed
-hook functions.
+consists of Work (Transformation) and Condition, where Condition can be used to implement
+DAG support. New use cases can be implemented by inheriting the Work class and implementing
+the required hook functions.
 
 .. image:: ../../images/v2/architecture_daemon_flow.png
       :alt: iDDS Architecture
@@ -12,11 +12,11 @@ hook functions.
 DictClass
 ~~~~~~~~~
 
-DictClass is designed to automatically convert all attributes of the class to a json dictionary
-and convert it back from the json dictionary to the class. The Workflow and Work classes are
-inherited from this class. In this way, the Workflow and Work can be transmitted from client to
-Rest service and be saved to database, in a json format. When reading, this json format can be
-converted back to Workflow or Work instance, which simplies the handings in the following step.
+DictClass is designed to automatically convert all attributes of the class to a JSON dictionary
+and convert it back from the JSON dictionary to a class instance. The Workflow and Work classes are
+inherited from this class. In this way, the Workflow and Work can be transmitted from the client to
+the REST service and be saved to the database in JSON format. When reading, this JSON format can be
+converted back to a Workflow or Work instance, which simplifies handling in subsequent steps.
 
 Workflow
 ~~~~~~~~
@@ -29,45 +29,46 @@ Workflow
          :width: 45%
          :alt: Loop Workflow
 
-A Workflow is designed to manage multiple Works(Transformations). It's a sub-class of DictClass.
-With Condition supports, the Workflow can support DAG management.
+A Workflow is designed to manage multiple Works (Transformations) and is a subclass of DictClass.
+By using Conditions, a Workflow can represent and manage DAG-style execution.
 
 SubWorkflow
 ~~~~~~~~~~~~~~~
 
 A workflow can be added as a subworkflow of another workflow. In this case, it can be regarded as a Work.
-However, this work will generate new Works.
+However, executing this Work will generate new Works at runtime.
 
 LoopWorkflow
 ~~~~~~~~~~~~~~~
 
-When adding a loop condition to a workflow, the workflow can be looped.
+When a loop condition is added to a workflow, the workflow can be executed repeatedly.
 
 Work
 ~~~~
 
-A Work, a sub-class of DictClass, is a transformation. New use cases can be implemented by
-inherited Work class.
+A Work, a subclass of DictClass, is a transformation. New use cases can be implemented by
+inheriting the Work class.
 
-1. Functions need to be overwritten for Transformer: 
+1. Functions that need to be overridden for a Transformer:
 
         a. get_input_collections: poll DDM to get the status and metadata of the collections.
         b. get_new_input_output_maps(registered_input_output_maps): registered_input_output_maps is provided
-           by iDDS with contents registered in iDDS db. This function should return maps between new inputs
-           to outputs.
-        c. create_processing(input_output_maps): Creating a processing with maps between inputs and outputs.
+           by iDDS with contents registered in the iDDS database. This function should return maps between
+           new inputs and outputs.
+        c. create_processing(input_output_maps): create a processing with maps between inputs and outputs.
         d. syn_work_status(registered_input_output_maps): registered_input_output_maps is provided
-           by iDDS with contents registered in iDDS db. It works to update the Work.status to be Transforming,
-           Finished, SubFinished or Failed based on all outputs' status in registered_input_output_maps.
+           by iDDS with contents registered in the iDDS database. It works to update the Work.status to
+           Transforming, Finished, SubFinished, or Failed based on the status of all outputs in
+           registered_input_output_maps.
 
-2. Functions need to be overwritten for Carrier: 
+2. Functions that need to be overridden for a Carrier:
 
-        a. submit_processing: Implement functions how to submit the processing.
-        b. poll_processing_updates: Implement functions how to poll the processing status.
-
+        a. submit_processing: implement how to submit the processing.
+        b. poll_processing_updates: implement how to poll the processing status.
 
 WorkflowManager
 ~~~~~~~~~~~~~~~
 
-It works to automatically convert a workflow to an iDDS request(The workflow will be converted to a json dictionary
-by DictClass) and send the request to iDDS Restful service.
+It works to automatically convert a workflow to an iDDS request (the workflow will be converted
+to a JSON dictionary by DictClass) and send the request to the iDDS RESTful service.
+
